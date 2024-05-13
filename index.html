@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz App</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    /* Custom styles */
+    .quiz-container {
+      margin-top: 2rem;
+    }
+    .timer {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <!-- Navbar -->
+  <nav class="bg-blue-600 p-4" role="navigation" aria-label="main navigation">
+    <div class="container mx-auto">
+      <a class="text-white text-xl font-bold" href="#">
+        Aplikasi Quiz By <strong>Steven</strong>
+      </a>
+    </div>
+  </nav>
+
+  <div id="app" class="container mx-auto quiz-container">
+    <div v-if="!quizStarted" class="text-center mt-8">
+      <h1 class="text-3xl font-bold mb-4">SELAMAT DATANG DI GAME KUIS</h1>
+      <button class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-700" @click="startQuiz">MULAI QUIZ</button>
+    </div>
+    <div v-else>
+      <div v-if="!quizFinished">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4">
+            <h2 class="text-2xl font-bold mb-4">{{ currentQuestion.question }}</h2>
+            <ul>
+              <li v-for="(option, index) in currentQuestion.options" :key="index" class="mb-2">
+                <label class="inline-flex items-center">
+                  <input type="radio" :value="option" v-model="selectedOption" class="form-radio text-blue-600">
+                  <span class="ml-2">{{ option }}</span>
+                </label>
+              </li>
+            </ul>
+            <!-- Checkbox untuk "SAYA MASIH RAGU" -->
+            <label class="inline-flex items-center mt-2">
+              <input type="checkbox" v-model="stillDoubt" class="form-checkbox text-blue-600">
+              <span class="ml-2">SAYA MASIH RAGU</span>
+            </label>
+            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-700" @click="checkAnswer">NEXT</button>
+            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-700" @click="previewQuestion" v-if="currentQuestionIndex > 0">previous</button>
+            <p v-if="!selectedOption && !stillDoubt" class="text-red-600 mt-2">ANDA HARUS JAWAB SOAL INI TERLEBIH DAHULU SEBELUM GANTI SOAL.</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4">
+            <p class="text-lg  text-bold">Waktu Tersisa: {{ timer }}</p>
+          </div>
+        </div>
+      </div>
+      <div v-else>
+        <h2 class="text-2xl font-bold">Quiz Selesai!</h2>
+        <p class="text-lg">Skor Anda: {{ score }}</p>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-700" @click="submitQuiz" v-if="timer > 0">SUBMIT</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        quizStarted: false,
+        quizFinished: false,
+        currentQuestionIndex: 0,
+        selectedOption: null,
+        stillDoubt: false, // Variabel untuk menyimpan status "SAYA MASIH RAGU"
+        timer: 600, // 10 menit dalam detik
+        score: 0,
+        questions: [
+          {
+            question: '1. Siapa yang memiliki kewenangan untuk menginisiasi amandemen UUD 1945?',
+            options: ['Presiden', 'MPR', 'DPR', 'Kabinet'],
+            answer: 'MPR'
+          },
+          {
+            question: '2. Apa yang dimaksud dengan Pembukaan UUD 1945?',
+            options: ['Bagian utama dari UUD 1945.', 'Pernyataan idealisme bangsa Indonesia.', 'Bagian yang menjelaskan proses amandemen.', 'Bagian yang ditambahkan dalam amandemen terakhir.'],
+            answer: 'Bagian utama dari UUD 1945.'
+          },
+          {
+            question: '3. Hasil perubahan UUD 1945 yang ketiga dilaksanakan pada tanggal 9 November 2001, menambah jumlah pasal dalam pasal 24 tentang kekuasaan kehakiman, yaitu pasal…',
+            options: ['Pasal 24B dan 24C.', 'Pasal 25C dan 24D.', 'Pasal 24D dan 24E', 'Pasal 24E dan 24F.'],
+            answer: 'Pasal 24B dan 24C.'
+          },
+
+          {
+            question: '4. Berdasarkan UU No.12 Tahun 2011 yang menjadi urutan tertinggi perundangan Republik Indonesia adalah ………',
+            options : [' Pancasila', 'UUD 1945', 'Undang – Undang', 'Ketetapan MPR'],
+            answer : 'UUD 1945',
+
+          },
+
+          {
+            question: '5. Alasan yuridis pembukaan UUD 1945 tidak dapat diubah adalah…..',
+            options : ['Pembukaan adalah pokok  kaidah yang fundamental', 'Pembukaan UUD tetap melekat erat pada terbentuknya negara', 'Proklamasi adalah kehendak Tuhan', 'Berhubungan dengan nasib warga negara.'],
+
+            answer : 'Pembukaan UUD tetap melekat erat pada terbentuknya negara',
+            
+
+          },
+
+          {
+            question: '6. Kemerdekaan  merupakan jalan  untuk mewujudkan  cita – cita bangsa merupakan makna  yang terkandung dalam pembukaan UUD 1945 alinea ke…',
+            options : ['Kedua', 'Ketiga', 'Keempat', 'Kesatu'],
+            answer : 'Keempat',
+            },
+
+            {
+            question: '7. UUD 1945 telah mengalami  4 kali amandemen.Aturan peralihan pada UUD 1945 setelah amandemen  memiliki',
+            options : ['1 Pasal', '	2 Pasal', '3 Pasal', '4 Pasal', ],
+            answer : '3 Pasal',
+            },
+            {
+            question: '8. Apabila RUU yang telah telah disetujui Bersama tidak disahkan dalam waktu 30 hari semenjak RUU tersebut disetujui,maka…...',
+            options : ['RUU tersebut tidak dapat digunakan', 'Sah menjadi UU dan harus diundangkan', 'RUU tersebut batal menjadi hukum', 'DPR meminta Persetujuan presiden untuk mengesahkan RUU tersebut', ],
+            answer : 'Sah menjadi UU dan harus diundangkan',
+            },
+
+            {
+            question: '9. Pembukaan UUD 1945 merupakan  penyebab batang tubuh UUD 1945,hal tersebut merupakan maksud hubungan dengan pembukaan UUD 1945 dengan batang tubuh  UUD 1945 yang bersifat …',
+            options : ['Fundamental', 'Formal', 'Kausal', 'Materiali', ],
+            answer : 'Kausal',
+
+            },
+            {
+            question: '10. Pengaturan mengenai Hak asasi manusia pada UUD 1945 terletak pada bab …',
+            options : ['XV', 'XVI', 'XA', 'XII' ],
+            answer : 'XA',
+
+            },
+
+        ]
+      },
+      computed: {
+        currentQuestion() {
+          return this.questions[this.currentQuestionIndex];
+        }
+      },
+      methods: {
+        startQuiz() {
+          this.quizStarted = true;
+          this.timerCountdown();
+        },
+        timerCountdown() {
+          const interval = setInterval(() => {
+            if (this.timer > 0) {
+              this.timer--;
+            } else {
+              clearInterval(interval);
+              this.quizFinished = true;
+            }
+          }, 1000);
+        },
+        checkAnswer() {
+          if (this.selectedOption === this.currentQuestion.answer || this.stillDoubt) {
+            this.score++;
+          } else {
+            // Menampilkan jawaban yang benar jika jawaban salah
+            alert('Jawaban yang benar adalah: ' + this.currentQuestion.answer);
+          }
+          this.selectedOption = null;
+          this.currentQuestionIndex++;
+          if (this.currentQuestionIndex === this.questions.length) {
+            this.quizFinished = true;
+          }
+        },
+        previewQuestion() {
+          this.currentQuestionIndex--;
+        },
+        submitQuiz() {
+          // Validasi sebelum mengirim soal
+          if (this.questions.some(question => !question.answer)) {
+            alert("Anda tidak bisa mengirim soal, jawaban masih ada yang kosong. Silakan cek kembali.");
+            return;
+          }
+          // Logika untuk mengirim quiz jika diperlukan
+          alert("Terimakasih telah mengikuti quiz,tetap semangat ya");
+          // Redirect ke halaman utama
+          window.location.href = "index.html"; // Ganti dengan nama file halaman utama Anda
+        }
+      }
+    });
+  </script>
+</body>
+</html>
